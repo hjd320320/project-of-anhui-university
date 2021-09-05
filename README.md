@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<!-- TemplateBeginEditable name="doctitle" -->
 <title>安大边缘计算项目</title>
 
 </head>
