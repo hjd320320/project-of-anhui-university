@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>安徽大学地图</title>
+<!-- baidu map -->
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<style type="text/css">
+body, html,#allmap {width: 100%;height: 100%;overflow: hidden;margin:0;font-family:"微软雅黑";}
+
+</style>
+<link href="http://api.map.baidu.com/library/TrafficControl/1.4/src/TrafficControl_min.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=uxAXaBOQGezIY5FNHixh8djRbXnrQWc8"></script>
+<script type="text/javascript" src="http://api.map.baidu.com/library/TrafficControl/1.4/src/TrafficControl_min.js"></script>
+<script type="text/javascript" src="http://libs.baidu.com/jquery/1.9.1/jquery.min.js"></script>
+<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=31hnqKEhOUOWFXXxvWYXiM1v"></script>
+    <!--加载鼠标绘制工具-->
+<script type="text/javascript" src="http://api.map.baidu.com/library/DrawingManager/1.4/src/DrawingManager_min.js"></script>
+<link rel="stylesheet" href="http://api.map.baidu.com/library/DrawingManager/1.4/src/DrawingManager_min.css" />
+</head>
+<body>
+<div id = "allmap"></div>
+	
+
+ <ul class="btn-wrap" style="z-index: 99;">
+        <li class = "btn" onclick = "addRouteType()">叠加路况</li>
+        <li class = "btn" onclick = "removeRouteType()">删除路况</li>
+	  <li class = "btn" onclick = "getInfoContent()">信息窗口内容</li>
+    </ul>
+</body>
+</html>
+<script type="text/javascript">
+//百度地图API功能
+var map = new BMap.Map("allmap");
+map.centerAndZoom(new BMap.Point(117.191797,31.771578),17);//根据坐标初始化地图
+map.enableScrollWheelZoom(true);
+map.addControl(new BMap.NavigationControl()); //平移缩放控件
+map.addControl(new BMap.ScaleControl()); //比例尺
+map.addControl(new BMap.OverviewMapControl()); //缩略地图
+map.addControl(new BMap.MapTypeControl()); //地图类型
+map.setCurrentCity("合肥"); // 仅当设置城市信息时，MapTypeControl的切换功能才能可用
+//添加标注
+var marker = new BMap.Marker(new BMap.Point(117.191797,31.771578),16); // 创建标注
+map.addOverlay(marker); // 将标注添加到地图中
+	//建立坐标点：
+// lng：经度 lat：纬度
+var points = [  
+{"lng":117.187286,"lat":31.771214,"url":"http://www.baidu.com","id":1,"name":"p1"},  
+{"lng":117.18946,"lat":31.772016,"url":"http://www.mi.com","id":2,"name":"p2"},  
+{"lng":117.185256,"lat":31.770707,"url":"http://www.csdn.com","id":3,"name":"p3"}//在此更换坐标信息 
+]; 
+//创建标注点并添加到地图中
+function addMarker(points) {
+    //循环建立标注点
+    for(var i=0, pointsLen = points.length; i<pointsLen; i++) {
+        var point = new BMap.Point(points[i].lng, points[i].lat); //将标注点转化成地图上的点
+        var marker = new BMap.Marker(point); //将点转化成标注点
+        map.addOverlay(marker);  //将标注点添加到地图上
+        //添加监听事件
+        (function() {
+            var thePoint = points[i];
+            marker.addEventListener("click",
+            //显示信息的方法
+                function() {
+                showInfo(this,thePoint);
+            });
+         })();  
+    }
+}
+function showInfo(thisMarker,point) {
+    //获取点的信息
+    var sContent = 
+    '<ul style="margin:0 0 5px 0;padding:0.2em 0">'  
+    +'<li style="line-height: 26px;font-size: 15px;">'  
+    +'<span style="width: 50px;display: inline-block;">id：</span>' + point.id + '</li>'  
+    +'<li style="line-height: 26px;font-size: 15px;">'  
+    +'<span style="width: 50px;display: inline-block;">名称：</span>' + point.name + '</li>'  
+    +'<li style="line-height: 26px;font-size: 15px;"><span style="width: 50px;display: inline-block;">查看：</span><a href="'+point.url+'">详情</a></li>'  
+    +'</ul>';
+    var infoWindow = new BMap.InfoWindow(sContent); //创建信息窗口对象
+    thisMarker.openInfoWindow(infoWindow); //图片加载完后重绘infoWindow
+}
+//创建地图
+var map = new BMap.Map("allmap");    
+map.centerAndZoom(new BMap.Point(117.191797,31.771578),16);  // 设置中心点
+map.setCurrentCity("合肥");          
+map.addControl(new BMap.MapTypeControl());  //设置可拖拽 
+map.enableScrollWheelZoom(true);  //添加滚轮缩放   
+addMarker(points); //添加标注
+ var ctrl = new BMapLib.TrafficControl({
+           showPanel: true //是否显示路况提示面板
+       });      
+       map.addControl(ctrl);
+       ctrl.setAnchor(BMAP_ANCHOR_BOTTOM_RIGHT);  
+
+// 具体思路是，点击marker，出现一个div层。你把div的样式做成一个右键菜单的样子就行了。div里可以写任何html
+        map.addEventListener('rightclick',function(e){
+            if(e.overlay){//判断右键单击的是否是marker
+                alert("请在别处创建哦！")
+                return;
+            }
+            console.log(e.point)
+            e.point;//{lng: 112.496976, lat: 26.965758}
+            RightClick(e.point);
+        })
+        function RightClick(d){
+            var ds = new BMap.Point(d);
+            var EventMarker =function(i){
+                //addEventF是具体的菜单方法，要实现什么功能取决自身需求
+                //addEventF(s,w);
+                //var context_menu = document.getElementById("context_menu");
+                console.log(i)
+                txtMenuItem[i].callback(i);
+            };
+		
+	    var markerMenu=new BMap.ContextMenu();
+        for(var i=0;i<txtMenuItem.length;i++){
+            var MenuItem  = new BMap.MenuItem(txtMenuItem[i].text,txtMenuItem[i].callback,100);
+            //MenuItem(text: String 设置菜单项的icon, callback: Function 事件, opts: MenuItemOptions)
+            //MenuItemOptions 
+            //width   Number	指定此菜单项的宽度，菜单以最长的菜单项宽度为准
+            //id      String    指定此菜单项dom的id
+            //iconUrl String | ContextMenuIcon  指定此菜单项的icon URL（大小为17px*17px）
+
+            //ContextMenuIcon 
+            //BMAP_CONTEXT_MENU_ICON_ZOOMIN	 放大图标
+            //BMAP_CONTEXT_MENU_ICON_ZOOMOUT 缩小图标
+
+            markerMenu.addItem(MenuItem);//EventMarker.bind(i)               
+        }
+        map.addContextMenu(markerMenu);//添加右键菜单
+    } 
+
+    var txtMenuItem = [  //右键菜单项目  
+        {
+            text: '放大',
+            callback: function () { map.zoomIn() }
+        },
+        {
+            text: '缩小',
+            callback: function () { map.zoomOut() }
+        },
+        {
+            text: '放置到最大级',
+            callback: function () { map.setZoom(18) }
+        },
+        {
+            text: '查看全国',
+            callback: function () { map.setZoom(4) }
+        }
+    ];
+		 
+var point1=new BMap.Point(117.203737,31.77493)
+var point2=new BMap.Point(117.192598,31.78199)
+var point3=new BMap.Point(117.191987,31.769312)
+var point4=new BMap.Point(117.187286,31.771214)
+var point5=new BMap.Point(117.207186,31.769312)
+var myIcon1 = new BMap.Icon('运输机.png',new BMap.Size(40,40))
+var myIcon2 = new BMap.Icon('汽车.png',new BMap.Size(40,40))
+var myIcon3 = new BMap.Icon('监控.png',new BMap.Size(40,40))
+var myIcon4 = new BMap.Icon('数据中心.png',new BMap.Size(40,40))
+var myIcon5 = new BMap.Icon('提货站点.png',new BMap.Size(40,40))
+
+var marker1 = new BMap.Marker(point1,{icon:myIcon1}); 
+var marker2 = new BMap.Marker(point2,{icon:myIcon2});  
+var marker3 = new BMap.Marker(point3,{icon:myIcon3});   
+var marker4 = new BMap.Marker(point4,{icon:myIcon4});    
+var marker5 = new BMap.Marker(point5,{icon:myIcon5});    
+// 在地图上添加点标记
+map.addOverlay(marker1);
+map.addOverlay(marker2);
+map.addOverlay(marker3);
+map.addOverlay(marker4);
+map.addOverlay(marker5);
+marker1.enableDragging(); //设置可拖拽
+
+marker1.addEventListener("dragend", function (e) {
+     alertMsg.confirm("要在该点添加新的标注吗?",{ okCall:function(){
+          addPoint(e.point.lng,e.point.lat);
+     }});
+});
+function configMark(result) {
+		var marks = result;
+		var marker,infoWindow,editMarker,removeMarker,markerMenu,icon;
+		var linePoints = []; //点坐标集合
+		var transedPoints = []; //百度地图坐标转换每次只能转10个，所以需要分批次转换
+ 
+		for ( var i = 0; i < marks.length; i++) {
+			var love = marks[i];
+			linePoints.push(new BMap.Point(love.bdCoorlng, love.bdCoorlat));
+			marker = new BMap.Marker(new BMap.Point(love.bdCoorlng, love.bdCoorlat));
+			if (love.isCheck == 0){
+				icon = new BMap.Icon("汽车.png", new BMap.Size(40, 40)); //显示图标
+			} else {
+				icon = new BMap.Icon("监控.png", new BMap.Size(40, 40)); //显示图标
+			}
+			marker.setIcon(icon); //设置标签图标自定义图标
+			map.addOverlay(marker); //添加标注    
+			content = "<div class='col-xs-12' Style='width:360px;'>" 
+					+ "<div class='form-group form-group-xs'><div class='col-xs-12'>【标注人】：" + love.personName + "</div></div>"
+					+ "<div class='form-group form-group-xs'><div class='col-xs-12'>【接收人】：" + love.receiveName + "</div></div>"
+					+ "<div class='form-group form-group-xs'><div class='col-xs-12'>【日期】：" + love.creatDate + "</div></div>"
+					+ "<div class='form-group form-group-xs'><div class='col-xs-12'>【内容】：" + love.content + "</div></div>"
+					+"</div>";
+			
+			//标注自定义属性
+			marker.loveData = {
+			   'loveId' : love.loveId,
+			   'receiveName' : love.receiveName,
+			   'isCheck' : love.isCheck 
+			};	
+			marker.addEventListener("click", function(e) {
+				//alert(e.target.loveData.loveId);
+				editPoint(e.target.loveData.loveId);                           
+			});
+			
+			//给标注添加右键菜单
+			editMarker = function(e,ee,marker) {
+				/* if (marker.loveData.isCheck == 1) {
+					alertMsg.info(marker.loveData.receiveName+'已查看该标注信息，无法修改');
+					return false;
+				} */
+				editPoint(marker.loveData.loveId);
+			}
+			removeMarker = function(e,ee,marker) {
+				console.log(marker.loveData.isCheck);
+				if (marker.loveData.isCheck == 1) {
+					alertMsg.info(marker.loveData.receiveName+'已查看该标注信息，无法删除');
+					return false;
+				}
+				alertMsg.confirm("确定删除该标注?",{ okCall:function(data) {
+					console.log(data);
+           			delPoint(marker.loveData.loveId,-1);
+					map.removeOverlay(marker);
+           		}});				
+			}
+			signUnCheckMarker = function(e,ee,marker) {
+				if (marker.loveData.isCheck == 0) {
+					alertMsg.info('该标注已经是未查看状态');
+					return false;
+				}
+				alertMsg.confirm("确定标记为未查看?",{ okCall:function(data) {
+           			delPoint(marker.loveData.loveId,0);
+           			$("#loveMapInitSELContainer .btn.sel-able").trigger('click');
+           		}});
+			}
+			signCheckedMarker = function(e,ee,marker) {
+				if (marker.loveData.isCheck == 1) {
+					alertMsg.info('该标注已经是已查看状态');
+					return false;
+				}
+				alertMsg.confirm("确定标记为已查看?",{ okCall:function(data) {
+					console.log(data);
+           			delPoint(marker.loveData.loveId,1);
+           			$("#loveMapInitSELContainer .btn.sel-able").trigger('click');
+           		}});
+			}
+			markerMenu=new BMap.ContextMenu();
+			markerMenu.addItem(new BMap.MenuItem('删除',removeMarker.bind(marker)));
+			markerMenu.addItem(new BMap.MenuItem('标记为未查看',signUnCheckMarker.bind(marker)));
+			markerMenu.addItem(new BMap.MenuItem('标记为已查看',signCheckedMarker.bind(marker)));
+			marker.addContextMenu(markerMenu);			
+			
+			//添加窗口信息
+			infoWindow = new BMap.InfoWindow(content); 
+			marker.infoWindow = infoWindow;
+			marker.addEventListener("mouseover", function(e) { //标注添加鼠标停留事件，展示窗口信息
+				this.openInfoWindow(e.target.infoWindow);
+			});
+			marker.addEventListener("mouseout", function(e) { //标注添加鼠标离开时间，关闭窗口信息
+				this.closeInfoWindow(e.target, infoWindow);
+			});
+		}
+		map.setViewport(linePoints); //调整路线到最佳视野
+	}
+
+
+function attribute(){
+  var p = marker.getPosition();
+   var plng=p.lng;
+   var plat=p.lat;
+
+// 继续自己的操作
+
+}
+ var bmap = {
+        drawingManager: '',
+        styleOptions: {
+            strokeColor: "red",      //边线颜色。  
+            fillColor: "red",        //填充颜色。当参数为空时，圆形将没有填充效果。  
+            strokeWeight: 3,        //边线的宽度，以像素为单位。  
+            strokeOpacity: 0.8,     //边线透明度，取值范围0 - 1。  
+            fillOpacity: 0.3,       //填充的透明度，取值范围0 - 1。  
+            strokeStyle: 'solid'    //边线的样式，solid或dashed。  
+        },
+
+        /*------实例化-----*/
+ init: function () {
+var styleOptions = this.styleOptions;
+            map.enableScrollWheelZoom();
+            //实例化鼠标绘制工具  
+            this.drawingManager = new BMapLib.DrawingManager(map, {
+                isOpen: true, //是否开启绘制模式  
+                enableDrawingTool: true, //是否显示工具栏  
+                drawingToolOptions: {
+                    anchor: BMAP_ANCHOR_TOP_RIGHT, //位置
+                    offset: new BMap.Size(5, 5), //偏离值
+                    scale: 0.8, //工具栏缩放比例
+                    drawingModes: [
+                     //工具栏上可以选择出现的绘制模式
+                     BMAP_DRAWING_MARKER,
+                     BMAP_DRAWING_POLYGON,
+                     BMAP_DRAWING_POLYLINE
+                     //BMAP_DRAWING_RECTANGLE
+                     //BMAP_DRAWING_CIRCLE   
+                    ]
+                },
+                polylineOptions: styleOptions, //线的样式  
+                polygonOptions: styleOptions, //多边形的样式  
+            });
+//添加鼠标绘制工具监听事件，用于获取绘制结果  
+this.drawingManager.addEventListener('overlaycomplete', bmap.overlaycomplete);
+        },
+        overlaycomplete: function (e) {
+            switch (e.drawingMode) {
+                case "marker":
+                    {
+                        var marker = e.overlay;
+                        /*-----------------标注右键删除-------------------------*/
+                        var markerMenu = new BMap.ContextMenu();
+                        markerMenu.addItem(new BMap.MenuItem('删除标注 ', function () {
+                            map.removeOverlay(marker);
+                        }))
+                        marker.addContextMenu(markerMenu);
+                        /*-----------------标注点击弹窗-------------------------*/
+                        marker.addEventListener("click", function (e) {
+                        var sContent =
+                        "<form method='post' action=''>" +
+                            "<table>" +
+                                "<tr>" +
+                                    "<td><b>名称：</b>" +
+                                        "<input type='text' name='Name' style='margin-top:10px;width:200px'/>" +
+                                    "</td>" +
+                                "</tr>" +
+                                "<tr>" +
+                                    "<td><b>坐标：</b>" +
+                                        "<input type='text' name='lng' value='" + e.point.lng + "' style='width:80px;'/>" +
+                                        "<span>-</span>" +
+                                        "<input type='text' name='lat' value='" + e.point.lat + "' style='width:80px;'/>" +
+                                    "</td>" +
+                                "</tr>" +
+                                "<tr >" +
+                                    "<td><b>备注：</b>" +
+                                        "<textarea  rows=6  name='Remark' style='width:198px;vertical-align:top;'></textarea>" +
+                                    "</td>" +
+                                "</tr>" +
+                                "<tr>" +
+                                    "<td style='text-align:right;'>" +
+                                        "<input type='button' value='保存' style='width: 40px;line-height: 40px;'/>" +
+                                    "</td>" +
+                                "</tr>" +
+                            "</talbe>" +
+                        "</form>";
+                            var opts = {
+                                enableMessage: false
+                            };
+                            var infoWindow = new BMap.InfoWindow(sContent, opts);
+                            this.openInfoWindow(infoWindow);
+                        });
+                    }
+                    break;
+                case "polyline":
+                    {
+                        var polyline = e.overlay;
+                        /*-----------------折线右键删除-------------------------*/
+                        var polylineMenu = new BMap.ContextMenu();
+                        polylineMenu.addItem(new BMap.MenuItem('删除折线', function () {
+                            map.removeOverlay(polyline);
+                        }));
+                        polyline.addContextMenu(polylineMenu);
+                    }
+                    break;
+                case "polygon":
+                    {
+                        var polygon = e.overlay;
+                        /*-----------------多边形右键删除-------------------------*/
+                        var polygonMenu = new BMap.ContextMenu();
+                        polygonMenu.addItem(new BMap.MenuItem('删除多边形', function () {
+                            map.removeOverlay(polygon);
+                        }));
+                        polygon.addContextMenu(polygonMenu);
+                    }
+                    break;
+            }
+        }
+    }
+bmap.init();
+
+
+function getCars(){
+	map.panTo(trackMap[trackMap.length - 1]);//将地图的中心点更改为给定的点。
+	map.setZoom(14);//将视图切换到指定的缩放等级，中心点坐标不变。
+	$.ajax({
+		async:false,
+		cache:true,
+		url: "获取车辆实时位置信息的接口",
+		type: 'GET',
+		dataType:'text',
+		success: function(result){
+			var result = eval('('+ result +')');
+			/*** 实时获取经纬度信息 ***/
+			sitsLongitude = result.lontitude;
+			sitsLatitude = result.latitude;
+			trackMap.push(new BMap.Point(sitsLongitude, sitsLatitude));//push() 方法可向数组的末尾添加一个或多个元素，并返回新的长度。
+			carContent = '<div><br/>经度： '+sitsLongitude+'<br/>纬度： '+sitsLatitude+'<p style="color:green; margin-left:65%;">正在跟踪中</p></div>';
+			//addOverlay(overlay: Overlay) : 将覆盖物添加到地图中，一个覆盖物实例只能向地图中添加一次
+			//Polyline(points: Array<Point>, opts: PolylineOptions) : 创建折线覆盖物对象
+			//PolylineOptions: 此类表示Polyline构造函数的可选参数。 
+			if (trackMap.length > 2) {
+				map.addOverlay(new BMap.Polyline([trackMap[trackMap.length-2], trackMap[trackMap.length - 1]], {strokeColor: "blue", strokeWeight: 3, strokeOpacity: 1, strokeStyle:"dashed"}));
+			}
+			addMouseoverHandler(carContent, carMarker);
+			carMarker.setPosition(trackMap[trackMap.length-1]);//setPosition:设置标注的地理坐标
+		},
+		error:function(e){
+			alert("获取物资信息失败");
+		}
+	});
+	setTimeout(function(){	//setTimeout() 方法用于在指定的毫秒数后调用函数或计算表达式。setTimeout() 只执行 code 一次。如果要多次调用，请使用 setInterval() 或者让 code 自身再次调用 setTimeout()。
+		getCars();
+	}, 2000);
+}
+//GPS坐标
+    var x = 117.32715863448607;
+    var y = 31.990912172420714;
+    var ggPoint = new BMap.Point(x,y)
+	//添加gps marker和label
+    var markergg = new BMap.Marker(ggPoint);
+    bm.addOverlay(markergg); //添加GPS marker
+    var labelgg = new BMap.Label("未转换的GPS坐标（错误）",{offset:new BMap.Size(20,-10)});
+    markergg.setLabel(labelgg); //添加GPS label
+
+    //坐标转换完之后的回调函数
+    translateCallback = function (data){
+      if(data.status === 0) {
+        var marker = new BMap.Marker(data.points[0]);
+        bm.addOverlay(marker);
+        var label = new BMap.Label("转换后的百度坐标（正确）",{offset:new BMap.Size(20,-10)});
+        marker.setLabel(label); //添加百度label
+        bm.setCenter(data.points[0]);
+      }
+    }
+
+    setTimeout(function(){
+        var convertor = new BMap.Convertor();
+        var pointArr = [];
+        pointArr.push(ggPoint);
+        convertor.translate(pointArr, 1, 5, translateCallback)
+    }, 1000);
+</script>
+<template>
+    <div class="monitor">
+        <!--面包屑-->
+        <span class="content_span">
+            <el-breadcrumb separator-class="el-icon-arrow-right">
+                <el-breadcrumb-item :to="{ path: '/index' }">首页</el-breadcrumb-item>
+                <el-breadcrumb-item>后台管理</el-breadcrumb-item>
+                <el-breadcrumb-item>人员管理</el-breadcrumb-item>
+                <el-breadcrumb-item>{{this.$route.meta.title}}</el-breadcrumb-item>
+            </el-breadcrumb>
+        </span>
+        <!-- 左侧信息 -->
+        <div class="left">
+            <el-tree 
+              :data="data" 
+              :props="defaultProps"
+              show-checkbox
+              @check-change="handleCheckChange">
+              <span class="custom-tree-node" slot-scope="{ node, data }">
+                <span>
+                    <i :class="node.icon"></i>{{ node.label }}
+                </span>              
+            </span>
+            </el-tree>
+        </div>
+ 
+        <!-- 地图 -->
+        <div id="map">
+        
+        </div>
+ 
+        <!-- 下面的展示区域 -->
+        <div class="bottom">
+              <el-table
+                :data="tableData"
+                style="width: 100%">
+                <el-table-column
+                    prop="Name"
+                    label="设备名称"
+                    width="200">
+                </el-table-column>
+                <el-table-column
+                    prop="Address"
+                    label="地理位置">
+                </el-table-column>
+                <el-table-column
+                    prop="Speed"
+                    label="速度"
+                    width="200">
+                </el-table-column>
+                <el-table-column
+                    prop="Time"
+                    label="上报时间"
+                    width="300">
+                </el-table-column>
+                <el-table-column
+                    prop="IsStatus"
+                    label="是否在线"
+                    width="200">
+                </el-table-column>
+             </el-table>
+        </div>
+    </div>
+</template>
+ 
+<script>
+var _this;
+import axios from '../../apiconfig/index.js';
+import loadMap from '../../../static/js/loadBMap';
+const moment=require('moment');
+export default {
+    data(){
+        return {
+           data:[{
+                label: '设备列表',
+                children: [{
+                    label: 'HBWS',
+                        children: [{
+                            label:"1095001"
+                        }]
+                }]
+           }],
+           defaultProps: {
+              children: 'children',
+              label: 'label'
+           },
+ 
+           map:'',
+           point:'',
+           marker:'',
+           label:'',
+           icon:'',
+           timer:null,
+ 
+           description:{
+                type:String,
+                default:'天安门'
+           },
+           pu:[],
+           
+           tableData:[]
+           
+        }
+    },
+    mounted(){
+       _this=this;
+       _this.getPuName();
+       window.localStorage.removeItem('PuID');
+       _this.baidu();
+    },
+    beforeDestroy(){
+      clearInterval(_this.timer);
+    },
+    methods:{
+       //获取getPuName
+       getPuName(){
+            axios
+            .get('/api/SafetyHat/GetEquipment')
+            .then(res=>{
+                console.log(res)
+                if(res.ResultType==0){
+                    _this.pu=res.Data.pu;
+                    _this.data[0].children[0].children=res.Data.pu.map((item)=>{
+                        return {
+                            label:item.PuName
+                        }
+                    })
+                }
+            })
+            .catch(error=>{
+                console.log(error)
+            })
+       },
+       //设置定时器
+       setDing(){
+            if(localStorage.getItem('PuID') != undefined && localStorage.getItem('PuID') != null){
+                //封装函数
+                function move(){
+                    console.log('666')                    
+                        _this.map.removeOverlay(_this.marker);
+                        axios
+                        .get('/api/SafetyHat/Monitor',{
+                            params:{
+                                PuID:localStorage.getItem('PuID') || ''
+                            }
+                        })
+                        .then(res=>{
+                            console.log(res)
+                            var PuName=_this.pu.find(itm=>{return itm.PuID==localStorage.getItem('PuID')}).PuName
+                            if(res.ResultType==0){
+                                _this.point=new BMap.Point(res.Data[0].Longitude,res.Data[0].Latidude);
+                                if(res.Data[0].State == 1){
+                                    _this.icon=new BMap.Icon('../../../static/imgs/map1.png', new BMap.Size(25, 20), {
+                                            anchor: new BMap.Size(10, 20)
+                                    });
+                                }else{
+                                    _this.icon=new BMap.Icon('../../../static/imgs/cap.png', new BMap.Size(25, 20), {
+                                            anchor: new BMap.Size(10, 20)
+                                    });
+                                }
+                                _this.map.centerAndZoom(_this.point, 17);
+                                _this.label = new BMap.Label(PuName, {offset: new BMap.Size(-10, 25)});
+                                _this.marker=new BMap.Marker(_this.point,{icon:_this.icon});
+                                _this.marker.setLabel(_this.label)
+                                _this.map.addOverlay(_this.marker);
+                                
+                                //点击出现框框
+                                var opts ={
+                                        width :250,
+                                        height:200,
+                                        title :"地址：",
+                                }
+                                var infoWindow =new BMap.InfoWindow('aaaaa',opts);// 创建信息窗口对象
+                                _this.marker.addEventListener("click",function(){
+                                    _this.map.openInfoWindow(infoWindow,_this.point);
+                                });
+                                //根据经纬度获取地址
+                                var geolocation = new BMap.Geolocation();
+                                var gc = new BMap.Geocoder();
+                                var pointAdd = new BMap.Point(res.Data[0].Longitude, res.Data[0].Latidude);
+                                gc.getLocation(pointAdd, function(rs){
+                                    //console.log(rs.address)
+                                    //点击给底部赋值
+                                    _this.tableData=res.Data.map((item)=>{
+                                        return {
+                                            Name:PuName,
+                                            Address:rs.address,
+                                            Speed:item.Speed+'km/h',
+                                            Time:moment(item.GpsTime*1000).format('YYYY-MM-DD HH:mm:ss'),
+                                            IsStatus:item.State == 0 ? '在线':'不在线'
+                                        }
+                                    })
+                                })
+ 
+                            }
+                        })
+                        .catch(error=>{
+                            console.log(error)
+                        })                    
+                }
+                move();
+                //调用定时器
+                _this.timer=setInterval(move,20000);
+            }
+       },
+       baidu(){
+            // panTo()方法将让地图平滑移动至新中心点，如果移动距离超过了当前地图区域大小，则地图会直跳到该点
+            // new BMap.DrivingRoute(map);创建驾车实例
+            loadMap('lGct54QCT9vLZ2b4miQlr5KirsBXI1Du').then(()=>{
+                    _this.map = new BMap.Map("map");    // 创建Map实例
+                    _this.point=new BMap.Point(117.471938,31.371433);
+ 
+                    _this.map.centerAndZoom(_this.point, 15);  // 初始化地图,设置中心点坐标和地图级别
+                    //添加地图类型控件
+                    _this.map.addControl(new BMap.MapTypeControl({
+                        mapTypes:[
+                            BMAP_NORMAL_MAP,
+                            BMAP_HYBRID_MAP
+                        ]}));	  
+                    _this.map.setCurrentCity("合肥");          // 设置地图显示的城市 此项是必须设置的
+                    _this.map.enableScrollWheelZoom(true);     //开启鼠标滚轮缩放
+                    
+                    //调用定时器
+                    _this.setDing();
+                    
+            })
+        },
+        //多选框点击时
+        handleCheckChange(data, checked, indeterminate) {
+                if(checked==true){
+                        var PuID=_this.pu.find(itm=>{return itm.PuName==data.label}).PuID;
+                        window.localStorage.setItem('PuID',PuID);
+                        axios
+                        .get('/api/SafetyHat/Monitor',{
+                            params:{
+                                PuID:localStorage.getItem('PuID') || ''
+                            }
+                        })
+                        .then(res=>{
+                            console.log(res)
+                            if(res.ResultType==0){
+                                    _this.setDing();
+                                } 
+                        })
+                        .catch(error=>{
+                            console.log(error)
+                        })
+                }else{
+                    window.localStorage.removeItem('PuID')
+                    clearInterval(_this.timer);
+                    _this.map.removeOverlay(_this.marker);
+                }
+        },
+    }
+}
+</script>
+ 
+<style scoped>
+ /* .monitor{
+    width:89%;
+    height:900px;
+    float:right;
+ } */
+ .left{
+    width:15%;
+    height:980px;
+    float:left;
+    background: #e0eeee;
+    padding:10px 5px;
+}
+#map{
+    width:85%;
+    height:980px;
+    float:right;
+ }
+.el-tree{
+    background: #e0eeee;
+    font-size:13px;
+}
+.bottom{
+    width:89%;
+    height:100px;
+    position: absolute;
+    left:11%;
+    bottom:0;
+}
+.bottom .el-table{
+    background: #eee;
+}
+</style>
